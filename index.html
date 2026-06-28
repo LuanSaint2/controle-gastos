@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="App PWA para controle de gastos pessoais com funcionalidade offline">
+    <meta name="description" content="App PWA para controle de gastos pessoais">
     <meta name="theme-color" content="#667eea">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Gastos">
-    <link rel="manifest" href="manifest.json">
     <title>💰 Controle de Gastos</title>
     <style>
         * {
@@ -304,37 +303,6 @@
             flex: 1;
         }
 
-        .offline-indicator {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #ef4444;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            z-index: 1000;
-            display: none;
-        }
-
-        .offline-indicator.show {
-            display: block;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateY(100px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
         @media (max-width: 768px) {
             .form-row {
                 grid-template-columns: 1fr;
@@ -375,31 +343,8 @@
 </head>
 <body>
     <div id="app"></div>
-    <div id="offline-indicator" class="offline-indicator">📡 Modo offline</div>
 
     <script>
-        // Registrar Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').then(
-                    registration => console.log('SW registrado'),
-                    error => console.log('Erro SW:', error)
-                );
-            });
-        }
-
-        // Indicador offline
-        const offlineIndicator = document.getElementById('offline-indicator');
-        window.addEventListener('online', () => {
-            offlineIndicator.classList.remove('show');
-        });
-        window.addEventListener('offline', () => {
-            offlineIndicator.classList.add('show');
-        });
-        if (!navigator.onLine) {
-            offlineIndicator.classList.add('show');
-        }
-
         // APP
         class GastosApp {
             constructor() {
@@ -463,12 +408,15 @@
                 const csv = 'Data,Categoria,Descrição,Valor\n' +
                     this.gastos.map(g => `${g.data},${g.categoria},${g.descricao},${g.valor.toFixed(2)}`).join('\n');
                 
-                const blob = new Blob([csv], { type: 'text/csv' });
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `gastos-${this.mesFiltro}.csv`;
-                a.click();
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', `gastos-${this.mesFiltro}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
             }
 
             resetarDados() {
