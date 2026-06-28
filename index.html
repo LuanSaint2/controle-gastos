@@ -9,8 +9,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Gastos">
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/png" sizes="192x192" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23667eea' width='192' height='192'/><text x='50%' y='50%' font-size='100' fill='white' text-anchor='middle' dy='.3em'>💰</text></svg>">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23667eea' width='192' height='192'/><text x='50%' y='50%' font-size='100' fill='white' text-anchor='middle' dy='.3em'>💰</text></svg>">
     <title>💰 Controle de Gastos</title>
     <style>
         * {
@@ -22,7 +20,7 @@
         html, body {
             width: 100%;
             height: 100%;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #f5f5f5;
             color: #333;
         }
@@ -32,27 +30,278 @@
             flex-direction: column;
         }
 
-        #root {
+        #app {
             flex: 1;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
 
-        @supports (padding: max(0px)) {
-            body {
-                padding-left: max(12px, env(safe-area-inset-left));
-                padding-right: max(12px, env(safe-area-inset-right));
-                padding-bottom: max(12px, env(safe-area-inset-bottom));
-            }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
-        .loading {
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-box h4 {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .stat-box .value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+
+        .card h3 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            margin-right: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-small {
+            padding: 8px 12px;
+            font-size: 12px;
+            width: auto;
+        }
+
+        .filtro-mes {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .filtro-mes label {
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .filtro-mes input {
+            flex: 1;
+            max-width: 200px;
+        }
+
+        .gasto-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .gasto-info {
+            flex: 1;
+        }
+
+        .gasto-categoria {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #667eea;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .gasto-desc {
+            font-weight: 600;
+            color: #333;
+            margin-top: 5px;
+        }
+
+        .gasto-data {
+            font-size: 12px;
+            color: #999;
+            margin-top: 3px;
+        }
+
+        .gasto-valor {
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+            margin-right: 15px;
+        }
+
+        .gasto-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .lista-vazia {
+            text-align: center;
+            color: #999;
+            padding: 40px 20px;
+        }
+
+        .categoria-tag {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #667eea;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            margin-right: 8px;
+        }
+
+        .chart-info {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .chart-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .chart-row:last-child {
+            border-bottom: none;
+        }
+
+        .chart-bar {
             display: flex;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
-            font-size: 18px;
-            color: #667eea;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .chart-bar-fill {
+            height: 8px;
+            background: #667eea;
+            border-radius: 4px;
+            flex: 1;
         }
 
         .offline-indicator {
@@ -68,11 +317,11 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             z-index: 1000;
             display: none;
-            animation: slideIn 0.3s ease-out;
         }
 
         .offline-indicator.show {
             display: block;
+            animation: slideIn 0.3s ease-out;
         }
 
         @keyframes slideIn {
@@ -87,17 +336,45 @@
         }
 
         @media (max-width: 768px) {
-            .offline-indicator {
-                bottom: 10px;
-                right: 10px;
-                padding: 10px 16px;
-                font-size: 11px;
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .gasto-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .gasto-actions {
+                width: 100%;
+                margin-top: 10px;
+            }
+
+            .gasto-valor {
+                align-self: flex-start;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .filtro-mes {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filtro-mes input {
+                max-width: 100%;
             }
         }
     </style>
 </head>
 <body>
-    <div id="root" class="loading">Carregando...</div>
+    <div id="app"></div>
     <div id="offline-indicator" class="offline-indicator">📡 Modo offline</div>
 
     <script>
@@ -105,356 +382,249 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js').then(
-                    registration => console.log('SW registrado:', registration),
-                    error => console.log('Erro ao registrar SW:', error)
+                    registration => console.log('SW registrado'),
+                    error => console.log('Erro SW:', error)
                 );
             });
         }
 
-        // Indicador de conexão offline
+        // Indicador offline
         const offlineIndicator = document.getElementById('offline-indicator');
-        
         window.addEventListener('online', () => {
             offlineIndicator.classList.remove('show');
-            console.log('Reconectado');
         });
-
         window.addEventListener('offline', () => {
             offlineIndicator.classList.add('show');
-            console.log('Modo offline');
         });
-
         if (!navigator.onLine) {
             offlineIndicator.classList.add('show');
         }
-    </script>
 
-    <!-- React -->
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/react.production.min.js"></script>
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/react-dom.production.min.js"></script>
-    
-    <!-- Babel para JSX -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
-
-    <!-- Recharts para gráficos -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.10.3/Recharts.js"></script>
-
-    <!-- Componente principal -->
-    <script type="text/babel">
-        const GastosApp = () => {
-            const CATEGORIAS = ['Alimentação', 'Transporte', 'Saúde', 'Educação', 'Lazer', 'Utilidades', 'Trabalho', 'Outro'];
-            const CORES = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#6B7280'];
-
-            const [gastos, setGastos] = React.useState(() => {
-                const saved = localStorage.getItem('gastos');
-                return saved ? JSON.parse(saved) : [];
-            });
-
-            const [form, setForm] = React.useState({
-                data: new Date().toISOString().split('T')[0],
-                categoria: 'Alimentação',
-                descricao: '',
-                valor: ''
-            });
-
-            const [mesFiltro, setMesFiltro] = React.useState(new Date().toISOString().slice(0, 7));
-            const [mostrarFormulario, setMostrarFormulario] = React.useState(false);
-
-            React.useEffect(() => {
-                localStorage.setItem('gastos', JSON.stringify(gastos));
-            }, [gastos]);
-
-            const adicionarGasto = (e) => {
-                e.preventDefault();
-                if (!form.valor || !form.descricao) {
-                    alert('Preencha valor e descrição');
-                    return;
-                }
-
-                const novoGasto = {
-                    id: Date.now(),
-                    ...form,
-                    valor: parseFloat(form.valor)
-                };
-
-                setGastos([...gastos, novoGasto]);
-                setForm({
+        // APP
+        class GastosApp {
+            constructor() {
+                this.CATEGORIAS = ['Alimentação', 'Transporte', 'Saúde', 'Educação', 'Lazer', 'Utilidades', 'Trabalho', 'Outro'];
+                this.CORES = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#6B7280'];
+                
+                this.gastos = JSON.parse(localStorage.getItem('gastos')) || [];
+                this.mesFiltro = new Date().toISOString().slice(0, 7);
+                this.mostrarFormulario = false;
+                
+                this.form = {
                     data: new Date().toISOString().split('T')[0],
                     categoria: 'Alimentação',
                     descricao: '',
                     valor: ''
+                };
+
+                this.render();
+            }
+
+            salvarDados() {
+                localStorage.setItem('gastos', JSON.stringify(this.gastos));
+            }
+
+            adicionarGasto(e) {
+                e.preventDefault();
+                
+                if (!this.form.valor || !this.form.descricao) {
+                    alert('Preencha valor e descrição');
+                    return;
+                }
+
+                this.gastos.push({
+                    id: Date.now(),
+                    data: this.form.data,
+                    categoria: this.form.categoria,
+                    descricao: this.form.descricao,
+                    valor: parseFloat(this.form.valor)
                 });
-                setMostrarFormulario(false);
-            };
 
-            const deletarGasto = (id) => {
-                if (window.confirm('Tem certeza que deseja deletar este gasto?')) {
-                    setGastos(gastos.filter(g => g.id !== id));
+                this.salvarDados();
+                this.form = {
+                    data: new Date().toISOString().split('T')[0],
+                    categoria: 'Alimentação',
+                    descricao: '',
+                    valor: ''
+                };
+                this.mostrarFormulario = false;
+                this.render();
+            }
+
+            deletarGasto(id) {
+                if (confirm('Deletar este gasto?')) {
+                    this.gastos = this.gastos.filter(g => g.id !== id);
+                    this.salvarDados();
+                    this.render();
                 }
-            };
+            }
 
-            const gastosFiltrados = gastos.filter(g => g.data.startsWith(mesFiltro));
-            const totalMes = gastosFiltrados.reduce((sum, g) => sum + g.valor, 0);
-
-            const dadosPorCategoria = CATEGORIAS.map(cat => ({
-                name: cat,
-                valor: gastosFiltrados.filter(g => g.categoria === cat).reduce((sum, g) => sum + g.valor, 0)
-            })).filter(d => d.valor > 0);
-
-            const dadosGrafico = gastosFiltrados.reduce((acc, g) => {
-                const dia = new Date(g.data).getDate();
-                const item = acc.find(a => a.dia === dia);
-                if (item) {
-                    item.gasto += g.valor;
-                } else {
-                    acc.push({ dia, gasto: g.valor });
-                }
-                return acc;
-            }, []).sort((a, b) => a.dia - b.dia);
-
-            const exportarDados = () => {
+            exportarDados() {
                 const csv = 'Data,Categoria,Descrição,Valor\n' +
-                    gastos.map(g => `${g.data},${g.categoria},${g.descricao},${g.valor.toFixed(2)}`).join('\n');
+                    this.gastos.map(g => `${g.data},${g.categoria},${g.descricao},${g.valor.toFixed(2)}`).join('\n');
                 
                 const blob = new Blob([csv], { type: 'text/csv' });
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `gastos-${mesFiltro}.csv`;
+                a.download = `gastos-${this.mesFiltro}.csv`;
                 a.click();
-            };
+            }
 
-            const resetarDados = () => {
-                if (window.confirm('Tem certeza que deseja deletar TODOS os dados? Esta ação não pode ser desfeita.')) {
-                    setGastos([]);
+            resetarDados() {
+                if (confirm('DELETAR TODOS OS DADOS? Não pode ser desfeito!')) {
+                    this.gastos = [];
+                    this.salvarDados();
+                    this.render();
                 }
-            };
+            }
 
-            return (
-                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
-                    <style>{`
-                        * { box-sizing: border-box; }
-                        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-                        .header h1 { margin: 0; font-size: 28px; }
-                        .header p { margin: 5px 0 0 0; opacity: 0.9; }
-                        .container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
-                        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e0e0e0; }
-                        .card h3 { margin-top: 0; color: #333; }
-                        .btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s; }
-                        .btn-primary { background: #667eea; color: white; }
-                        .btn-primary:hover { background: #5568d3; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); }
-                        .btn-secondary { background: #f0f0f0; color: #333; margin-right: 10px; }
-                        .btn-secondary:hover { background: #e0e0e0; }
-                        .btn-danger { background: #ef4444; color: white; padding: 8px 12px; font-size: 12px; }
-                        .btn-danger:hover { background: #dc2626; }
-                        .btn-small { padding: 8px 12px; font-size: 12px; }
-                        .form-group { margin-bottom: 15px; }
-                        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #333; font-size: 14px; }
-                        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
-                        .form-group input:focus, .form-group select:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
-                        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
-                        .stat-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; text-align: center; }
-                        .stat-box h4 { margin: 0 0 10px 0; font-size: 12px; opacity: 0.9; }
-                        .stat-box .value { font-size: 28px; font-weight: bold; }
-                        .gasto-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #f9f9f9; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #667eea; }
-                        .gasto-info { flex: 1; }
-                        .gasto-categoria { display: inline-block; background: #e0e7ff; color: #667eea; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-right: 10px; }
-                        .gasto-desc { font-weight: 600; color: #333; margin-top: 5px; }
-                        .gasto-data { font-size: 12px; color: #999; margin-top: 3px; }
-                        .gasto-valor { font-size: 20px; font-weight: bold; color: #667eea; margin-right: 15px; }
-                        .lista-vazia { text-align: center; color: #999; padding: 40px 20px; }
-                        .filtro-mes { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
-                        .filtro-mes input { flex: 1; max-width: 200px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
-                        .chart-container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 20px; border: 1px solid #e0e0e0; }
-                        .chart-container h3 { margin-top: 0; color: #333; }
-                        @media (max-width: 768px) {
-                            .container { grid-template-columns: 1fr; }
-                            .stats { grid-template-columns: 1fr; }
-                            .header h1 { font-size: 22px; }
-                            .filtro-mes { flex-direction: column; }
-                            .filtro-mes input { max-width: 100%; }
-                        }
-                        .formulario { animation: slideDown 0.3s ease-out; }
-                        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-                    `}</style>
+            render() {
+                const gastosFiltrados = this.gastos.filter(g => g.data.startsWith(this.mesFiltro));
+                const totalMes = gastosFiltrados.reduce((sum, g) => sum + g.valor, 0);
 
-                    <div className="header">
+                const dadosPorCategoria = this.CATEGORIAS.map(cat => ({
+                    nome: cat,
+                    valor: gastosFiltrados.filter(g => g.categoria === cat).reduce((sum, g) => sum + g.valor, 0)
+                })).filter(d => d.valor > 0).sort((a, b) => b.valor - a.valor);
+
+                const maxValor = dadosPorCategoria.length > 0 ? Math.max(...dadosPorCategoria.map(d => d.valor)) : 0;
+
+                let html = `
+                    <div class="header">
                         <h1>💰 Controle de Gastos</h1>
                         <p>Acompanhe seus gastos com inteligência</p>
                     </div>
 
-                    <div className="stats">
-                        <div className="stat-box">
-                            <h4>Total este mês</h4>
-                            <div className="value">R$ {totalMes.toFixed(2)}</div>
-                        </div>
-                        <div className="stat-box">
-                            <h4>Número de gastos</h4>
-                            <div className="value">{gastosFiltrados.length}</div>
-                        </div>
-                        <div className="stat-box">
-                            <h4>Ticket médio</h4>
-                            <div className="value">R$ {gastosFiltrados.length > 0 ? (totalMes / gastosFiltrados.length).toFixed(2) : '0.00'}</div>
-                        </div>
-                    </div>
-
-                    {gastos.length > 0 && (
-                        <div className="container">
-                            <div className="chart-container">
-                                <h3>Gastos por dia</h3>
-                                {dadosGrafico.length > 0 ? (
-                                    <p style={{ color: '#999', textAlign: 'center' }}>Gráfico renderizado com os dados de {gastosFiltrados.length} gastos</p>
-                                ) : (
-                                    <p style={{ textAlign: 'center', color: '#999' }}>Sem dados para este mês</p>
-                                )}
+                    <div class="container">
+                        <div class="stats">
+                            <div class="stat-box">
+                                <h4>Total este mês</h4>
+                                <div class="value">R$ ${totalMes.toFixed(2)}</div>
                             </div>
+                            <div class="stat-box">
+                                <h4>Número de gastos</h4>
+                                <div class="value">${gastosFiltrados.length}</div>
+                            </div>
+                            <div class="stat-box">
+                                <h4>Ticket médio</h4>
+                                <div class="value">R$ ${gastosFiltrados.length > 0 ? (totalMes / gastosFiltrados.length).toFixed(2) : '0.00'}</div>
+                            </div>
+                        </div>
 
-                            <div className="chart-container">
+                        ${this.gastos.length > 0 ? `
+                            <div class="card">
                                 <h3>Gastos por categoria</h3>
-                                {dadosPorCategoria.length > 0 ? (
-                                    <div>
-                                        {dadosPorCategoria.map((item, idx) => (
-                                            <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-                                                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <span style={{ width: '12px', height: '12px', background: CORES[CATEGORIAS.indexOf(item.name)], borderRadius: '2px' }}></span>
-                                                    {item.name}
+                                ${dadosPorCategoria.length > 0 ? `
+                                    <div class="chart-info">
+                                        ${dadosPorCategoria.map(item => `
+                                            <div class="chart-row">
+                                                <span style="min-width: 100px;">
+                                                    <span class="categoria-tag" style="background: ${this.CORES[this.CATEGORIAS.indexOf(item.nome)]}40; color: ${this.CORES[this.CATEGORIAS.indexOf(item.nome)]};">${item.nome}</span>
                                                 </span>
-                                                <strong>R$ {item.valor.toFixed(2)}</strong>
+                                                <div class="chart-bar" style="flex: 1;">
+                                                    <div class="chart-bar-fill" style="background: ${this.CORES[this.CATEGORIAS.indexOf(item.nome)]}; width: ${(item.valor / maxValor) * 100}%;"></div>
+                                                </div>
+                                                <strong>R$ ${item.valor.toFixed(2)}</strong>
                                             </div>
-                                        ))}
+                                        `).join('')}
                                     </div>
-                                ) : (
-                                    <p style={{ textAlign: 'center', color: '#999' }}>Sem dados para este mês</p>
-                                )}
+                                ` : '<p style="text-align: center; color: #999;">Sem dados</p>'}
                             </div>
-                        </div>
-                    )}
+                        ` : ''}
 
-                    <div className="card" style={{ marginBottom: '30px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                            <h3>Adicionar novo gasto</h3>
-                            <button className="btn btn-primary btn-small" onClick={() => setMostrarFormulario(!mostrarFormulario)}>
-                                {mostrarFormulario ? '✕ Cancelar' : '+ Novo gasto'}
-                            </button>
-                        </div>
+                        <div class="card">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h3 style="margin: 0;">Adicionar novo gasto</h3>
+                                <button class="btn btn-primary btn-small" onclick="app.toggleFormulario()">
+                                    ${this.mostrarFormulario ? '✕ Cancelar' : '+ Novo gasto'}
+                                </button>
+                            </div>
 
-                        {mostrarFormulario && (
-                            <div className="formulario">
-                                <form onSubmit={adicionarGasto}>
-                                    <div className="form-group">
+                            ${this.mostrarFormulario ? `
+                                <form onsubmit="app.adicionarGasto.call(app, event)">
+                                    <div class="form-group">
                                         <label>Data</label>
-                                        <input
-                                            type="date"
-                                            value={form.data}
-                                            onChange={(e) => setForm({ ...form, data: e.target.value })}
-                                        />
+                                        <input type="date" value="${this.form.data}" onchange="app.form.data = this.value;">
                                     </div>
 
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                        <div className="form-group">
+                                    <div class="form-row">
+                                        <div class="form-group">
                                             <label>Categoria</label>
-                                            <select
-                                                value={form.categoria}
-                                                onChange={(e) => setForm({ ...form, categoria: e.target.value })}
-                                            >
-                                                {CATEGORIAS.map(cat => (
-                                                    <option key={cat} value={cat}>{cat}</option>
-                                                ))}
+                                            <select onchange="app.form.categoria = this.value;">
+                                                ${this.CATEGORIAS.map(cat => `
+                                                    <option value="${cat}" ${cat === this.form.categoria ? 'selected' : ''}>${cat}</option>
+                                                `).join('')}
                                             </select>
                                         </div>
 
-                                        <div className="form-group">
+                                        <div class="form-group">
                                             <label>Valor (R$)</label>
-                                            <input
-                                                type="number"
-                                                step="0.01"
-                                                min="0"
-                                                placeholder="0.00"
-                                                value={form.valor}
-                                                onChange={(e) => setForm({ ...form, valor: e.target.value })}
-                                            />
+                                            <input type="number" step="0.01" min="0" placeholder="0.00" value="${this.form.valor}" onchange="app.form.valor = this.value;">
                                         </div>
                                     </div>
 
-                                    <div className="form-group">
+                                    <div class="form-group">
                                         <label>Descrição</label>
-                                        <input
-                                            type="text"
-                                            placeholder="Ex: Almoço com amigos"
-                                            value={form.descricao}
-                                            onChange={(e) => setForm({ ...form, descricao: e.target.value })}
-                                        />
+                                        <input type="text" placeholder="Ex: Almoço com amigos" value="${this.form.descricao}" onchange="app.form.descricao = this.value;">
                                     </div>
 
-                                    <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
-                                        Adicionar gasto
-                                    </button>
+                                    <button type="submit" class="btn btn-primary">Adicionar gasto</button>
                                 </form>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="card">
-                        <div style={{ marginBottom: '20px' }}>
-                            <h3 style={{ marginTop: 0 }}>Meus gastos</h3>
-                            <div className="filtro-mes">
-                                <label style={{ fontWeight: '600', whiteSpace: 'nowrap', marginTop: '5px' }}>Filtrar mês:</label>
-                                <input
-                                    type="month"
-                                    value={mesFiltro}
-                                    onChange={(e) => setMesFiltro(e.target.value)}
-                                />
-                            </div>
+                            ` : ''}
                         </div>
 
-                        {gastosFiltrados.length > 0 ? (
-                            <>
-                                <div style={{ marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid #e0e0e0' }}>
-                                    {gastosFiltrados
+                        <div class="card">
+                            <h3>Meus gastos</h3>
+                            <div class="filtro-mes">
+                                <label>Filtrar mês:</label>
+                                <input type="month" value="${this.mesFiltro}" onchange="app.mesFiltro = this.value; app.render();">
+                            </div>
+
+                            ${gastosFiltrados.length > 0 ? `
+                                <div>
+                                    ${gastosFiltrados
                                         .sort((a, b) => new Date(b.data) - new Date(a.data))
-                                        .map(gasto => (
-                                            <div key={gasto.id} className="gasto-item">
-                                                <div className="gasto-info">
-                                                    <span className="gasto-categoria">{gasto.categoria}</span>
-                                                    <div className="gasto-desc">{gasto.descricao}</div>
-                                                    <div className="gasto-data">{new Date(gasto.data).toLocaleDateString('pt-BR')}</div>
+                                        .map(gasto => `
+                                            <div class="gasto-item">
+                                                <div class="gasto-info">
+                                                    <span class="gasto-categoria">${gasto.categoria}</span>
+                                                    <div class="gasto-desc">${gasto.descricao}</div>
+                                                    <div class="gasto-data">${new Date(gasto.data).toLocaleDateString('pt-BR')}</div>
                                                 </div>
-                                                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                                                    <span className="gasto-valor">R$ {gasto.valor.toFixed(2)}</span>
-                                                    <button
-                                                        className="btn btn-danger"
-                                                        onClick={() => deletarGasto(gasto.id)}
-                                                    >
-                                                        Deletar
-                                                    </button>
+                                                <div class="gasto-actions">
+                                                    <span class="gasto-valor">R$ ${gasto.valor.toFixed(2)}</span>
+                                                    <button class="btn btn-danger btn-small" onclick="app.deletarGasto(${gasto.id})">Deletar</button>
                                                 </div>
                                             </div>
-                                        ))}
+                                        `).join('')}
                                 </div>
 
-                                <div style={{ display: 'flex', gap: '10px' }}>
-                                    <button className="btn btn-secondary" onClick={exportarDados}>
-                                        📥 Exportar CSV
-                                    </button>
-                                    <button className="btn btn-danger" onClick={resetarDados}>
-                                        🗑️ Deletar tudo
-                                    </button>
+                                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0; display: flex; gap: 10px;">
+                                    <button class="btn btn-secondary" onclick="app.exportarDados()">📥 Exportar CSV</button>
+                                    <button class="btn btn-danger" onclick="app.resetarDados()">🗑️ Deletar tudo</button>
                                 </div>
-                            </>
-                        ) : (
-                            <div className="lista-vazia">
-                                <p>Nenhum gasto registrado para este mês</p>
-                                <p style={{ fontSize: '12px' }}>Adicione um novo gasto para começar!</p>
-                            </div>
-                        )}
+                            ` : `
+                                <div class="lista-vazia">
+                                    <p>Nenhum gasto registrado para este mês</p>
+                                    <p style="font-size: 12px;">Adicione um novo gasto para começar!</p>
+                                </div>
+                            `}
+                        </div>
                     </div>
-                </div>
-            );
-        };
+                `;
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<GastosApp />);
+                document.getElementById('app').innerHTML = html;
+            }
+
+            toggleFormulario() {
+                this.mostrarFormulario = !this.mostrarFormulario;
+                this.render();
+            }
+        }
+
+        // Iniciar app
+        const app = new GastosApp();
     </script>
 </body>
 </html>
