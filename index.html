@@ -33,15 +33,15 @@
                 </div>
                 <div>
                     <h1 class="text-lg font-bold tracking-tight text-white">Gestão Empresarial</h1>
-                    <p class="text-xs text-slate-400">Fluxo de Caixa & Sincronização GitHub</p>
+                    <p class="text-xs text-slate-400">Fluxo de Caixa & Sincronização Automática</p>
                 </div>
             </div>
             <div class="flex items-center space-x-2">
-                <button onclick="openSyncModal()" class="inline-flex items-center px-3.5 py-2 text-xs font-medium rounded-lg text-indigo-200 bg-indigo-950 hover:bg-indigo-900 border border-indigo-800 transition shadow-sm">
-                    <i class="fa-solid fa-cloud-arrow-down mr-2"></i> Sincronizar GitHub
+                <button onclick="openConfigModal()" class="inline-flex items-center px-3.5 py-2 text-xs font-medium rounded-lg text-indigo-200 bg-indigo-950 hover:bg-indigo-900 border border-indigo-800 transition shadow-sm">
+                    <i class="fa-solid fa-gear mr-2"></i> Configurar GitHub
                 </button>
-                <button onclick="exportData()" class="inline-flex items-center px-3.5 py-2 text-xs font-medium rounded-lg text-emerald-200 bg-emerald-950 hover:bg-emerald-900 border border-emerald-800 transition shadow-sm">
-                    <i class="fa-solid fa-file-arrow-down mr-2"></i> Exportar JSON
+                <button onclick="syncFromGitHub()" class="inline-flex items-center px-3.5 py-2 text-xs font-medium rounded-lg text-emerald-200 bg-emerald-950 hover:bg-emerald-900 border border-emerald-800 transition shadow-sm">
+                    <i class="fa-solid fa-rotate mr-2"></i> Sincronizar Nuvem
                 </button>
             </div>
         </div>
@@ -232,36 +232,40 @@
 
     </main>
 
-    <!-- Modal: Sincronização com GitHub (Raw Link) -->
-    <div id="sync-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <!-- Modal: Configurações do GitHub -->
+    <div id="config-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
             <div class="flex items-center justify-between pb-3 border-b border-slate-700">
                 <h3 class="text-base font-semibold text-white flex items-center">
-                    <i class="fa-brands fa-github text-indigo-400 mr-2 text-lg"></i> Sincronizar com GitHub Pages / Raw
+                    <i class="fa-brands fa-github text-indigo-400 mr-2 text-lg"></i> Conexão Automática com o GitHub
                 </h3>
-                <button onclick="closeSyncModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+                <button onclick="closeConfigModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
             
             <div class="py-4 space-y-4">
                 <p class="text-xs text-slate-300 leading-relaxed">
-                    Para puxar os dados atualizados direto do seu arquivo JSON hospedado no GitHub, cole abaixo o link direto da versão <code class="bg-slate-900 px-1.5 py-0.5 rounded text-indigo-300 font-mono text-xs">Raw</code> do seu repositório:
+                    Insira abaixo os dados do seu repositório para que o site envie os novos lançamentos automaticamente para o arquivo <code class="bg-slate-900 px-1.5 py-0.5 rounded text-indigo-300 font-mono text-xs">dados.json</code> no GitHub:
                 </p>
                 <div>
-                    <label class="block text-xs font-medium text-slate-400 mb-1">URL Raw do GitHub (ex: https://raw.githubusercontent.com/.../dados.json)</label>
-                    <input type="url" id="github-raw-url" placeholder="https://raw.githubusercontent.com/usuario/repo/main/dados.json" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Seu Nome de Usuário do GitHub</label>
+                    <input type="text" id="gh-user" placeholder="ex: seu-usuario" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
                 </div>
-                <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-700/60 text-xs text-slate-400 space-y-1">
-                    <p class="font-medium text-slate-300"><i class="fa-solid fa-lightbulb text-amber-400 mr-1"></i> Dica para salvar no GitHub:</p>
-                    <p>Sempre que exportar o arquivo JSON aqui pelo site, salve-o com o nome <code class="text-indigo-300">dados.json</code> no seu repositório do GitHub Pages. Ao colar o link Raw acima, o site sincronizará instantaneamente.</p>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Nome do Repositório</label>
+                    <input type="text" id="gh-repo" placeholder="ex: controle-gastos" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Personal Access Token (Classic com permissão repo)</label>
+                    <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
                 </div>
             </div>
 
             <div class="flex items-center justify-end space-x-3 pt-3 border-t border-slate-700">
-                <button onclick="closeSyncModal()" class="px-4 py-2 text-xs font-medium rounded-xl text-slate-300 bg-slate-700 hover:bg-slate-600 transition">Cancelar</button>
-                <button onclick="importFromGitHub()" class="px-4 py-2 text-xs font-semibold rounded-xl text-white bg-indigo-600 hover:bg-indigo-500 transition shadow-md shadow-indigo-600/30">
-                    <i class="fa-solid fa-cloud-arrow-down mr-1"></i> Baixar e Sincronizar
+                <button onclick="closeConfigModal()" class="px-4 py-2 text-xs font-medium rounded-xl text-slate-300 bg-slate-700 hover:bg-slate-600 transition">Cancelar</button>
+                <button onclick="saveConfig()" class="px-4 py-2 text-xs font-semibold rounded-xl text-white bg-indigo-600 hover:bg-indigo-500 transition shadow-md shadow-indigo-600/30">
+                    <i class="fa-solid fa-floppy-disk mr-1"></i> Salvar Credenciais
                 </button>
             </div>
         </div>
@@ -269,23 +273,124 @@
 
     <!-- JavaScript Application Logic -->
     <script>
-        // Saldo Inicial fixo conforme definido no projeto
         const SALDO_INICIAL_BASE = 129.42;
 
-        // Estado da aplicação carregado do localStorage ou inicializado vazio
         let transactions = JSON.parse(localStorage.getItem('gestao_financeira_transacoes')) || [];
-
-        // Definir data padrão de hoje no formulário
         document.getElementById('data').valueAsDate = new Date();
 
-        // Inicializar aplicação ao carregar a janela
         window.onload = function() {
-            const savedUrl = localStorage.getItem('gestao_financeira_github_url');
-            if (savedUrl) {
-                document.getElementById('github-raw-url').value = savedUrl;
-            }
+            // Carregar configurações salvas no navegador
+            document.getElementById('gh-user').value = localStorage.getItem('gh_user') || '';
+            document.getElementById('gh-repo').value = localStorage.getItem('gh_repo') || '';
+            document.getElementById('gh-token').value = localStorage.getItem('gh_token') || '';
+            
             renderApp();
+            // Tenta sincronizar automaticamente ao abrir se houver dados na nuvem
+            if(localStorage.getItem('gh_user')) {
+                syncFromGitHub(true);
+            }
         };
+
+        function openConfigModal() {
+            document.getElementById('config-modal').classList.remove('hidden');
+        }
+
+        function closeConfigModal() {
+            document.getElementById('config-modal').classList.add('hidden');
+        }
+
+        function saveConfig() {
+            const user = document.getElementById('gh-user').value.trim();
+            const repo = document.getElementById('gh-repo').value.trim();
+            const token = document.getElementById('gh-token').value.trim();
+
+            if (!user || !repo || !token) {
+                showToast('Preencha todos os campos de configuração!', 'error');
+                return;
+            }
+
+            localStorage.setItem('gh_user', user);
+            localStorage.setItem('gh_repo', repo);
+            localStorage.setItem('gh_token', token);
+
+            closeConfigModal();
+            showToast('Configurações salvas com sucesso!', 'success');
+        }
+
+        // Função para enviar os dados automaticamente para o GitHub via API
+        async function syncToGitHub() {
+            const user = localStorage.getItem('gh_user');
+            const repo = localStorage.getItem('gh_repo');
+            const token = localStorage.getItem('gh_token');
+
+            if (!user || !repo || !token) return; // Se não configurado, apenas ignora e salva localmente
+
+            const path = 'dados.json';
+            const url = `https://api.github.com/repos/${user}/${repo}/contents/${path}`;
+            const contentEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(transactions, null, 2))));
+
+            try {
+                // 1. Precisamos pegar o SHA atual do arquivo no GitHub (exigido pela API para atualizar)
+                let sha = '';
+                const getRes = await fetch(url, {
+                    headers: { 'Authorization': `token ${token}` }
+                });
+                
+                if (getRes.ok) {
+                    const fileData = await getRes.json();
+                    sha = fileData.sha;
+                }
+
+                // 2. Envia o novo conteúdo atualizado
+                const bodyData = {
+                    message: "Atualização automática de gastos via app web",
+                    content: contentEncoded,
+                    sha: sha ? sha : undefined
+                };
+
+                const putRes = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(bodyData)
+                });
+
+                if (!putRes.ok) throw new Error('Falha ao atualizar arquivo no GitHub.');
+                console.log('Sincronizado automaticamente com o GitHub!');
+            } catch (error) {
+                console.error('Erro na sincronização automática:', error);
+            }
+        }
+
+        // Função para baixar os dados mais recentes do GitHub
+        async function syncFromGitHub(silent = false) {
+            const user = localStorage.getItem('gh_user');
+            const repo = localStorage.getItem('gh_repo');
+
+            if (!user || !repo) {
+                if(!silent) openConfigModal();
+                return;
+            }
+
+            const url = `https://raw.githubusercontent.com/${user}/${repo}/main/dados.json`;
+
+            try {
+                if(!silent) showToast('Buscando dados do GitHub...', 'info');
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Arquivo dados.json não encontrado no repositório.');
+                
+                const remoteData = await response.json();
+                if (Array.isArray(remoteData)) {
+                    transactions = remoteData;
+                    saveAndRender(false); // Salva localmente sem disparar novo upload em loop
+                    if(!silent) showToast('Dados sincronizados da nuvem com sucesso!', 'success');
+                }
+            } catch (error) {
+                if(!silent) showToast('Nenhum dado encontrado na nuvem ainda.', 'info');
+            }
+        }
 
         // Adicionar Nova Transação
         function addTransaction(event) {
@@ -314,35 +419,38 @@
             };
 
             transactions.unshift(newTx);
-            saveAndRender();
+            saveAndRender(true);
             
             document.getElementById('valor').value = '';
             document.getElementById('descricao').value = '';
             document.getElementById('data').valueAsDate = new Date();
 
-            showToast('Movimentação registrada com sucesso!', 'success');
+            showToast('Movimentação registrada e salva na nuvem!', 'success');
         }
 
         // Excluir Transação Individual
         function deleteTransaction(id) {
             transactions = transactions.filter(tx => tx.id !== id);
-            saveAndRender();
-            showToast('Movimentação excluída com sucesso.', 'info');
+            saveAndRender(true);
+            showToast('Movimentação excluída.', 'info');
         }
 
         // Limpar todas as movimentações
         function clearAllData() {
             if (confirm('Tem certeza que deseja apagar todo o extrato deste ciclo?')) {
                 transactions = [];
-                saveAndRender();
-                showToast('Extrato limpo com sucesso.', 'info');
+                saveAndRender(true);
+                showToast('Extrato limpo.', 'info');
             }
         }
 
-        // Salvar no LocalStorage e Atualizar Tela
-        function saveAndRender() {
+        // Salvar no LocalStorage, atualizar tela e disparar sincronização com GitHub
+        function saveAndRender(syncCloud = true) {
             localStorage.setItem('gestao_financeira_transacoes', JSON.stringify(transactions));
             renderApp();
+            if (syncCloud) {
+                syncToGitHub();
+            }
         }
 
         // Renderização Completa dos Indicadores e Tabela
@@ -412,54 +520,6 @@
                 cardLucro.className = 'text-2xl font-bold text-rose-400 mt-1';
             } else {
                 cardLucro.className = 'text-2xl font-bold text-indigo-400 mt-1';
-            }
-        }
-
-        // Exportar Dados em Formato JSON
-        function exportData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(transactions, null, 2));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", "dados.json");
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
-            showToast('Arquivo dados.json gerado para o GitHub!', 'success');
-        }
-
-        // Funções do Modal de Sincronização GitHub
-        function openSyncModal() {
-            document.getElementById('sync-modal').classList.remove('hidden');
-        }
-
-        function closeSyncModal() {
-            document.getElementById('sync-modal').classList.add('hidden');
-        }
-
-        // Importar dados direto de um link Raw do GitHub
-        async function importFromGitHub() {
-            const url = document.getElementById('github-raw-url').value.trim();
-            if (!url) {
-                showToast('Insira uma URL Raw válida do GitHub!', 'error');
-                return;
-            }
-
-            try {
-                showToast('Buscando dados do GitHub...', 'info');
-                const response = await fetch(url);
-                if (!response.ok) throw new Error('Não foi possível acessar a URL informada.');
-                
-                const remoteData = await response.json();
-                if (!Array.isArray(remoteData)) throw new Error('Formato JSON inválido.');
-
-                transactions = remoteData;
-                localStorage.setItem('gestao_financeira_github_url', url);
-                saveAndRender();
-                closeSyncModal();
-                showToast('Dados sincronizados com sucesso do GitHub!', 'success');
-            } catch (error) {
-                console.error(error);
-                showToast('Erro ao sincronizar. Verifique se o link Raw está público.', 'error');
             }
         }
 
