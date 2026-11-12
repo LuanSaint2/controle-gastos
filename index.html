@@ -1,578 +1,500 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="App PWA para controle de gastos pessoais">
-    <meta name="theme-color" content="#667eea">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Gastos">
-    <title>💰 Controle de Gastos</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html, body {
-            width: 100%;
-            height: 100%;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f5f5;
-            color: #333;
-        }
-
-        body {
-            display: flex;
-            flex-direction: column;
-        }
-
-        #app {
-            flex: 1;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 5px;
-        }
-
-        .header p {
-            opacity: 0.9;
-            font-size: 14px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .stat-box {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-        }
-
-        .stat-box h4 {
-            font-size: 12px;
-            opacity: 0.9;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        .stat-box .value {
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            border: 1px solid #e0e0e0;
-            margin-bottom: 20px;
-        }
-
-        .card h3 {
-            margin-top: 0;
-            margin-bottom: 20px;
-            color: #333;
-            font-size: 18px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #333;
-            font-size: 14px;
-        }
-
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-            font-family: inherit;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s;
-            font-family: inherit;
-        }
-
-        .btn-primary {
-            background: #667eea;
-            color: white;
-            width: 100%;
-        }
-
-        .btn-primary:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-secondary {
-            background: #f0f0f0;
-            color: #333;
-            margin-right: 10px;
-        }
-
-        .btn-secondary:hover {
-            background: #e0e0e0;
-        }
-
-        .btn-danger {
-            background: #ef4444;
-            color: white;
-            padding: 8px 12px;
-            font-size: 12px;
-        }
-
-        .btn-danger:hover {
-            background: #dc2626;
-        }
-
-        .btn-small {
-            padding: 8px 12px;
-            font-size: 12px;
-            width: auto;
-        }
-
-        .filtro-mes {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .filtro-mes label {
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
-        .filtro-mes input {
-            flex: 1;
-            max-width: 200px;
-        }
-
-        .gasto-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            background: #f9f9f9;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            border-left: 4px solid #667eea;
-        }
-
-        .gasto-info {
-            flex: 1;
-        }
-
-        .gasto-categoria {
-            display: inline-block;
-            background: #e0e7ff;
-            color: #667eea;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-right: 10px;
-        }
-
-        .gasto-desc {
-            font-weight: 600;
-            color: #333;
-            margin-top: 5px;
-        }
-
-        .gasto-data {
-            font-size: 12px;
-            color: #999;
-            margin-top: 3px;
-        }
-
-        .gasto-valor {
-            font-size: 18px;
-            font-weight: bold;
-            color: #667eea;
-            margin-right: 15px;
-        }
-
-        .gasto-actions {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .lista-vazia {
-            text-align: center;
-            color: #999;
-            padding: 40px 20px;
-        }
-
-        .categoria-tag {
-            display: inline-block;
-            background: #e0e7ff;
-            color: #667eea;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            margin-right: 8px;
-        }
-
-        .chart-info {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-
-        .chart-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .chart-row:last-child {
-            border-bottom: none;
-        }
-
-        .chart-bar {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex: 1;
-        }
-
-        .chart-bar-fill {
-            height: 8px;
-            background: #667eea;
-            border-radius: 4px;
-            flex: 1;
-        }
-
-        @media (max-width: 768px) {
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-
-            .stats {
-                grid-template-columns: 1fr;
-            }
-
-            .gasto-item {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .gasto-actions {
-                width: 100%;
-                margin-top: 10px;
-            }
-
-            .gasto-valor {
-                align-self: flex-start;
-            }
-
-            .header h1 {
-                font-size: 22px;
-            }
-
-            .filtro-mes {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .filtro-mes input {
-                max-width: 100%;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div id="app"></div>
-
+    <title>Gestão Financeira - Fluxo de Caixa</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
-        // APP
-        class GastosApp {
-            constructor() {
-                this.CATEGORIAS = ['Alimentação', 'Transporte', 'Saúde', 'Educação', 'Lazer', 'Utilidades', 'Trabalho', 'Outro'];
-                this.CORES = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#6B7280'];
-                
-                this.gastos = JSON.parse(localStorage.getItem('gastos')) || [];
-                this.mesFiltro = new Date().toISOString().slice(0, 7);
-                this.mostrarFormulario = false;
-                
-                this.form = {
-                    data: new Date().toISOString().split('T')[0],
-                    categoria: 'Alimentação',
-                    descricao: '',
-                    valor: ''
-                };
-
-                this.render();
-            }
-
-            salvarDados() {
-                localStorage.setItem('gastos', JSON.stringify(this.gastos));
-            }
-
-            adicionarGasto(e) {
-                e.preventDefault();
-                
-                if (!this.form.valor || !this.form.descricao) {
-                    alert('Preencha valor e descrição');
-                    return;
-                }
-
-                this.gastos.push({
-                    id: Date.now(),
-                    data: this.form.data,
-                    categoria: this.form.categoria,
-                    descricao: this.form.descricao,
-                    valor: parseFloat(this.form.valor)
-                });
-
-                this.salvarDados();
-                this.form = {
-                    data: new Date().toISOString().split('T')[0],
-                    categoria: 'Alimentação',
-                    descricao: '',
-                    valor: ''
-                };
-                this.mostrarFormulario = false;
-                this.render();
-            }
-
-            deletarGasto(id) {
-                if (confirm('Deletar este gasto?')) {
-                    this.gastos = this.gastos.filter(g => g.id !== id);
-                    this.salvarDados();
-                    this.render();
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
                 }
             }
+        }
+    </script>
+</head>
+<body class="h-full bg-slate-900 text-slate-100 font-sans antialiased flex flex-col">
 
-            exportarDados() {
-                const csv = 'Data,Categoria,Descrição,Valor\n' +
-                    this.gastos.map(g => `${g.data},${g.categoria},${g.descricao},${g.valor.toFixed(2)}`).join('\n');
-                
-                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement('a');
-                const url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                link.setAttribute('download', `gastos-${this.mesFiltro}.csv`);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
+    <!-- Header / Navbar -->
+    <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-30 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-600 p-2.5 rounded-xl text-white shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid fa-chart-line text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight text-white">Gestão Empresarial</h1>
+                    <p class="text-xs text-slate-400">Fluxo de Caixa & Sincronização GitHub</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button onclick="openSyncModal()" class="inline-flex items-center px-3.5 py-2 text-xs font-medium rounded-lg text-indigo-200 bg-indigo-950 hover:bg-indigo-900 border border-indigo-800 transition shadow-sm">
+                    <i class="fa-solid fa-cloud-arrow-down mr-2"></i> Sincronizar GitHub
+                </button>
+                <button onclick="exportData()" class="inline-flex items-center px-3.5 py-2 text-xs font-medium rounded-lg text-emerald-200 bg-emerald-950 hover:bg-emerald-900 border border-emerald-800 transition shadow-sm">
+                    <i class="fa-solid fa-file-arrow-down mr-2"></i> Exportar JSON
+                </button>
+            </div>
+        </div>
+    </header>
 
-            resetarDados() {
-                if (confirm('DELETAR TODOS OS DADOS? Não pode ser desfeito!')) {
-                    this.gastos = [];
-                    this.salvarDados();
-                    this.render();
-                }
-            }
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 overflow-y-auto">
 
-            render() {
-                const gastosFiltrados = this.gastos.filter(g => g.data.startsWith(this.mesFiltro));
-                const totalMes = gastosFiltrados.reduce((sum, g) => sum + g.valor, 0);
+        <!-- Notification Banner / Toast -->
+        <div id="toast" class="hidden fixed bottom-5 right-5 z-50 px-4 py-3 rounded-xl shadow-2xl text-sm font-medium border transition-all duration-300 transform translate-y-2 opacity-0"></div>
 
-                const dadosPorCategoria = this.CATEGORIAS.map(cat => ({
-                    nome: cat,
-                    valor: gastosFiltrados.filter(g => g.categoria === cat).reduce((sum, g) => sum + g.valor, 0)
-                })).filter(d => d.valor > 0).sort((a, b) => b.valor - a.valor);
+        <!-- Dashboard Cards -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <!-- Saldo em Caixa -->
+            <div class="bg-slate-800 border border-slate-700/80 rounded-2xl p-5 shadow-lg relative overflow-hidden">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Valor em Caixa Atual</p>
+                        <h3 id="card-caixa" class="text-2xl font-bold text-white mt-1">R$ 0,00</h3>
+                    </div>
+                    <div class="p-3 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20">
+                        <i class="fa-solid fa-wallet text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-xs text-slate-400 flex items-center">
+                    <span class="text-slate-400 font-medium mr-1">Base Inicial:</span> R$ 129,42
+                </div>
+            </div>
 
-                const maxValor = dadosPorCategoria.length > 0 ? Math.max(...dadosPorCategoria.map(d => d.valor)) : 0;
+            <!-- Faturamento do Mês -->
+            <div class="bg-slate-800 border border-slate-700/80 rounded-2xl p-5 shadow-lg relative overflow-hidden">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Faturamento (Entradas)</p>
+                        <h3 id="card-faturamento" class="text-2xl font-bold text-emerald-400 mt-1">R$ 0,00</h3>
+                    </div>
+                    <div class="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20">
+                        <i class="fa-solid fa-arrow-trend-up text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-xs text-slate-400">Total recebido no ciclo</div>
+            </div>
 
-                let html = `
-                    <div class="header">
-                        <h1>💰 Controle de Gastos</h1>
-                        <p>Acompanhe seus gastos com inteligência</p>
+            <!-- Gastos do Mês -->
+            <div class="bg-slate-800 border border-slate-700/80 rounded-2xl p-5 shadow-lg relative overflow-hidden">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Gastos do Mês (Saídas)</p>
+                        <h3 id="card-gastos" class="text-2xl font-bold text-rose-400 mt-1">R$ 0,00</h3>
+                    </div>
+                    <div class="p-3 bg-rose-500/10 text-rose-400 rounded-xl border border-rose-500/20">
+                        <i class="fa-solid fa-arrow-trend-down text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-xs text-slate-400">Total pago no ciclo</div>
+            </div>
+
+            <!-- Lucro Real -->
+            <div class="bg-slate-800 border border-slate-700/80 rounded-2xl p-5 shadow-lg relative overflow-hidden">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Lucro Real</p>
+                        <h3 id="card-lucro" class="text-2xl font-bold text-indigo-400 mt-1">R$ 0,00</h3>
+                    </div>
+                    <div class="p-3 bg-indigo-500/10 text-indigo-400 rounded-xl border border-indigo-500/20">
+                        <i class="fa-solid fa-scale-balanced text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-xs text-slate-400">Entradas menos Saídas</div>
+            </div>
+        </section>
+
+        <!-- Main Grid: Form & List -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Column 1: Transaction Form -->
+            <div class="bg-slate-800 border border-slate-700/80 rounded-2xl p-6 shadow-xl h-fit">
+                <h2 class="text-base font-semibold text-white mb-4 flex items-center">
+                    <i class="fa-solid fa-circle-plus text-indigo-500 mr-2"></i> Nova Movimentação
+                </h2>
+                <form id="transaction-form" onsubmit="addTransaction(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Tipo de Movimento</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="flex items-center justify-center px-4 py-2.5 rounded-xl border border-slate-700 bg-slate-900 cursor-pointer hover:border-emerald-500/50 transition has-[:checked]:bg-emerald-950/40 has-[:checked]:border-emerald-500 has-[:checked]:text-emerald-300">
+                                <input type="radio" name="tipo" value="Entrada" checked class="sr-only">
+                                <span class="text-sm font-medium"><i class="fa-solid fa-arrow-up mr-1 text-emerald-400"></i> Entrada</span>
+                            </label>
+                            <label class="flex items-center justify-center px-4 py-2.5 rounded-xl border border-slate-700 bg-slate-900 cursor-pointer hover:border-rose-500/50 transition has-[:checked]:bg-rose-950/40 has-[:checked]:border-rose-500 has-[:checked]:text-rose-300">
+                                <input type="radio" name="tipo" value="Saída" class="sr-only">
+                                <span class="text-sm font-medium"><i class="fa-solid fa-arrow-down mr-1 text-rose-400"></i> Saída</span>
+                            </label>
+                        </div>
                     </div>
 
-                    <div class="container">
-                        <div class="stats">
-                            <div class="stat-box">
-                                <h4>Total este mês</h4>
-                                <div class="value">R$ ${totalMes.toFixed(2)}</div>
-                            </div>
-                            <div class="stat-box">
-                                <h4>Número de gastos</h4>
-                                <div class="value">${gastosFiltrados.length}</div>
-                            </div>
-                            <div class="stat-box">
-                                <h4>Ticket médio</h4>
-                                <div class="value">R$ ${gastosFiltrados.length > 0 ? (totalMes / gastosFiltrados.length).toFixed(2) : '0.00'}</div>
-                            </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Data</label>
+                            <input type="date" id="data" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
                         </div>
-
-                        ${this.gastos.length > 0 ? `
-                            <div class="card">
-                                <h3>Gastos por categoria</h3>
-                                ${dadosPorCategoria.length > 0 ? `
-                                    <div class="chart-info">
-                                        ${dadosPorCategoria.map(item => `
-                                            <div class="chart-row">
-                                                <span style="min-width: 100px;">
-                                                    <span class="categoria-tag" style="background: ${this.CORES[this.CATEGORIAS.indexOf(item.nome)]}40; color: ${this.CORES[this.CATEGORIAS.indexOf(item.nome)]};">${item.nome}</span>
-                                                </span>
-                                                <div class="chart-bar" style="flex: 1;">
-                                                    <div class="chart-bar-fill" style="background: ${this.CORES[this.CATEGORIAS.indexOf(item.nome)]}; width: ${(item.valor / maxValor) * 100}%;"></div>
-                                                </div>
-                                                <strong>R$ ${item.valor.toFixed(2)}</strong>
-                                            </div>
-                                        `).join('')}
-                                    </div>
-                                ` : '<p style="text-align: center; color: #999;">Sem dados</p>'}
-                            </div>
-                        ` : ''}
-
-                        <div class="card">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                                <h3 style="margin: 0;">Adicionar novo gasto</h3>
-                                <button class="btn btn-primary btn-small" onclick="app.toggleFormulario()">
-                                    ${this.mostrarFormulario ? '✕ Cancelar' : '+ Novo gasto'}
-                                </button>
-                            </div>
-
-                            ${this.mostrarFormulario ? `
-                                <form onsubmit="app.adicionarGasto.call(app, event)">
-                                    <div class="form-group">
-                                        <label>Data</label>
-                                        <input type="date" value="${this.form.data}" onchange="app.form.data = this.value;">
-                                    </div>
-
-                                    <div class="form-row">
-                                        <div class="form-group">
-                                            <label>Categoria</label>
-                                            <select onchange="app.form.categoria = this.value;">
-                                                ${this.CATEGORIAS.map(cat => `
-                                                    <option value="${cat}" ${cat === this.form.categoria ? 'selected' : ''}>${cat}</option>
-                                                `).join('')}
-                                            </select>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label>Valor (R$)</label>
-                                            <input type="number" step="0.01" min="0" placeholder="0.00" value="${this.form.valor}" onchange="app.form.valor = this.value;">
-                                        </div>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label>Descrição</label>
-                                        <input type="text" placeholder="Ex: Almoço com amigos" value="${this.form.descricao}" onchange="app.form.descricao = this.value;">
-                                    </div>
-
-                                    <button type="submit" class="btn btn-primary">Adicionar gasto</button>
-                                </form>
-                            ` : ''}
-                        </div>
-
-                        <div class="card">
-                            <h3>Meus gastos</h3>
-                            <div class="filtro-mes">
-                                <label>Filtrar mês:</label>
-                                <input type="month" value="${this.mesFiltro}" onchange="app.mesFiltro = this.value; app.render();">
-                            </div>
-
-                            ${gastosFiltrados.length > 0 ? `
-                                <div>
-                                    ${gastosFiltrados
-                                        .sort((a, b) => new Date(b.data) - new Date(a.data))
-                                        .map(gasto => `
-                                            <div class="gasto-item">
-                                                <div class="gasto-info">
-                                                    <span class="gasto-categoria">${gasto.categoria}</span>
-                                                    <div class="gasto-desc">${gasto.descricao}</div>
-                                                    <div class="gasto-data">${new Date(gasto.data).toLocaleDateString('pt-BR')}</div>
-                                                </div>
-                                                <div class="gasto-actions">
-                                                    <span class="gasto-valor">R$ ${gasto.valor.toFixed(2)}</span>
-                                                    <button class="btn btn-danger btn-small" onclick="app.deletarGasto(${gasto.id})">Deletar</button>
-                                                </div>
-                                            </div>
-                                        `).join('')}
-                                </div>
-
-                                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0; display: flex; gap: 10px;">
-                                    <button class="btn btn-secondary" onclick="app.exportarDados()">📥 Exportar CSV</button>
-                                    <button class="btn btn-danger" onclick="app.resetarDados()">🗑️ Deletar tudo</button>
-                                </div>
-                            ` : `
-                                <div class="lista-vazia">
-                                    <p>Nenhum gasto registrado para este mês</p>
-                                    <p style="font-size: 12px;">Adicione um novo gasto para começar!</p>
-                                </div>
-                            `}
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Valor (R$)</label>
+                            <input type="number" step="0.01" id="valor" placeholder="0,00" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
                         </div>
                     </div>
-                `;
 
-                document.getElementById('app').innerHTML = html;
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Categoria</label>
+                        <select id="categoria" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+                            <option value="Receita de Vendas">Receita de Vendas / Serviços</option>
+                            <option value="Custo Variável">Custo Variável / Matéria-prima</option>
+                            <option value="Despesa Fixa">Despesa Fixa (Aluguel, Luz, etc)</option>
+                            <option value="Despesa Operacional">Despesa Operacional (Software, Frete)</option>
+                            <option value="Pró-labore / Retirada">Pró-labore / Retirada de Sócio</option>
+                            <option value="Outros">Outros</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Descrição / Histórico</label>
+                        <input type="text" id="descricao" placeholder="Ex: Pagamento Cliente João" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Forma de Pagamento</label>
+                        <select id="forma" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+                            <option value="Pix">Pix</option>
+                            <option value="Cartão de Crédito">Cartão de Crédito</option>
+                            <option value="Cartão de Débito">Cartão de Débito</option>
+                            <option value="Dinheiro">Dinheiro</option>
+                            <option value="Boleto Bancário">Boleto Bancário</option>
+                            <option value="Transferência">Transferência Bancária</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="w-full mt-2 py-3 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-sm transition shadow-lg shadow-indigo-600/30 flex items-center justify-center">
+                        <i class="fa-solid fa-check mr-2"></i> Registrar Movimento
+                    </button>
+                </form>
+            </div>
+
+            <!-- Column 2 & 3: Extrato Table -->
+            <div class="lg:col-span-2 bg-slate-800 border border-slate-700/80 rounded-2xl p-6 shadow-xl flex flex-col">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-700/80 gap-3">
+                    <div>
+                        <h2 class="text-base font-semibold text-white flex items-center">
+                            <i class="fa-solid fa-list-ul text-indigo-500 mr-2"></i> Extrato de Movimentações
+                        </h2>
+                        <p class="text-xs text-slate-400">Histórico detalhado das entradas e saídas do ciclo</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="clearAllData()" class="px-3 py-1.5 text-xs font-medium rounded-lg text-rose-300 bg-rose-950/60 hover:bg-rose-900 border border-rose-900/60 transition">
+                            <i class="fa-solid fa-trash-can mr-1.5"></i> Limpar Tudo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Table Container -->
+                <div class="flex-1 overflow-x-auto mt-4">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-700 text-slate-400 text-xs font-semibold uppercase tracking-wider">
+                                <th class="py-3 px-4">Data</th>
+                                <th class="py-3 px-4">Tipo</th>
+                                <th class="py-3 px-4">Categoria & Descrição</th>
+                                <th class="py-3 px-4">Forma</th>
+                                <th class="py-3 px-4 text-right">Valor</th>
+                                <th class="py-3 px-4 text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transaction-table-body" class="divide-y divide-slate-700/50 text-sm">
+                            <!-- Injetado via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="hidden flex-col items-center justify-center py-16 text-center">
+                    <div class="p-4 bg-slate-900 rounded-full text-slate-500 mb-3 border border-slate-700">
+                        <i class="fa-solid fa-receipt text-2xl"></i>
+                    </div>
+                    <p class="text-slate-300 font-medium text-sm">Nenhuma movimentação registrada</p>
+                    <p class="text-slate-500 text-xs mt-1">Preencha o formulário ao lado para começar o controle.</p>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Modal: Sincronização com GitHub (Raw Link) -->
+    <div id="sync-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-700">
+                <h3 class="text-base font-semibold text-white flex items-center">
+                    <i class="fa-brands fa-github text-indigo-400 mr-2 text-lg"></i> Sincronizar com GitHub Pages / Raw
+                </h3>
+                <button onclick="closeSyncModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <div class="py-4 space-y-4">
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    Para puxar os dados atualizados direto do seu arquivo JSON hospedado no GitHub, cole abaixo o link direto da versão <code class="bg-slate-900 px-1.5 py-0.5 rounded text-indigo-300 font-mono text-xs">Raw</code> do seu repositório:
+                </p>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">URL Raw do GitHub (ex: https://raw.githubusercontent.com/.../dados.json)</label>
+                    <input type="url" id="github-raw-url" placeholder="https://raw.githubusercontent.com/usuario/repo/main/dados.json" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+                </div>
+                <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-700/60 text-xs text-slate-400 space-y-1">
+                    <p class="font-medium text-slate-300"><i class="fa-solid fa-lightbulb text-amber-400 mr-1"></i> Dica para salvar no GitHub:</p>
+                    <p>Sempre que exportar o arquivo JSON aqui pelo site, salve-o com o nome <code class="text-indigo-300">dados.json</code> no seu repositório do GitHub Pages. Ao colar o link Raw acima, o site sincronizará instantaneamente.</p>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end space-x-3 pt-3 border-t border-slate-700">
+                <button onclick="closeSyncModal()" class="px-4 py-2 text-xs font-medium rounded-xl text-slate-300 bg-slate-700 hover:bg-slate-600 transition">Cancelar</button>
+                <button onclick="importFromGitHub()" class="px-4 py-2 text-xs font-semibold rounded-xl text-white bg-indigo-600 hover:bg-indigo-500 transition shadow-md shadow-indigo-600/30">
+                    <i class="fa-solid fa-cloud-arrow-down mr-1"></i> Baixar e Sincronizar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Saldo Inicial fixo conforme definido no projeto
+        const SALDO_INICIAL_BASE = 129.42;
+
+        // Estado da aplicação carregado do localStorage ou inicializado vazio
+        let transactions = JSON.parse(localStorage.getItem('gestao_financeira_transacoes')) || [];
+
+        // Definir data padrão de hoje no formulário
+        document.getElementById('data').valueAsDate = new Date();
+
+        // Inicializar aplicação ao carregar a janela
+        window.onload = function() {
+            // Verificar se há URL salva no localStorage para sincronização automática opcional
+            const savedUrl = localStorage.getItem('gestao_financeira_github_url');
+            if (savedUrl) {
+                document.getElementById('github-raw-url').value = savedUrl;
+            }
+            renderApp();
+        };
+
+        // Adicionar Nova Transação
+        function addTransaction(event) {
+            event.preventDefault();
+            
+            const tipo = document.querySelector('input[name="tipo"]:checked').value;
+            const data = document.getElementById('data').value;
+            const valor = parseFloat(document.getElementById('valor').value);
+            const categoria = document.getElementById('categoria').value;
+            const descricao = document.getElementById('descricao').value;
+            const forma = document.getElementById('forma').value;
+
+            if (!data || isNaN(valor) || valor <= 0 || !descricao) {
+                showToast('Preencha todos os campos corretamente!', 'error');
+                return;
             }
 
-            toggleFormulario() {
-                this.mostrarFormulario = !this.mostrarFormulario;
-                this.render();
+            const newTx = {
+                id: Date.now().toString(),
+                tipo,
+                data,
+                valor,
+                categoria,
+                descricao,
+                forma
+            };
+
+            transactions.unshift(newTx); // Adiciona no topo
+            saveAndRender();
+            
+            // Resetar campos parciais
+            document.getElementById('valor').value = '';
+            document.getElementById('descricao').value = '';
+            document.getElementById('data').valueAsDate = new Date();
+
+            showToast('Movimentação registrada com sucesso!', 'success');
+        }
+
+        // Excluir Transação Individual
+        function deleteTransaction(id) {
+            transactions = transactions.filter(tx => tx.id !== id);
+            saveAndRender();
+            showToast('Movimentação excluída com sucesso.', 'info');
+        }
+
+        // Limpar todas as movimentações
+        function clearAllData() {
+            if (confirm('Tem certeza que deseja apagar todo o extrato deste ciclo?')) {
+                transactions = [];
+                saveAndRender();
+                showToast('Extrato limpo com sucesso.', 'info');
             }
         }
 
-        // Iniciar app
-        const app = new GastosApp();
+        // Salvar no LocalStorage e Atualizar Tela
+        function saveAndRender() {
+            localStorage.setItem('gestao_financeira_transacoes', JSON.stringify(transactions));
+            renderApp();
+        }
+
+        // Renderização Completa dos Indicadores e Tabela
+        function renderApp() {
+            const tableBody = document.getElementById('transaction-table-body');
+            const emptyState = document.getElementById('empty-state');
+            
+            tableBody.innerHTML = '';
+
+            if (transactions.length === 0) {
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+            } else {
+                emptyState.classList.remove('flex');
+                emptyState.classList.add('hidden');
+            }
+
+            let totalEntradas = 0;
+            let totalSaidas = 0;
+
+            transactions.forEach(tx => {
+                if (tx.tipo === 'Entrada') {
+                    totalEntradas += tx.valor;
+                } else {
+                    totalSaidas += tx.valor;
+                }
+
+                // Formatar Data (YYYY-MM-DD para DD/MM/YYYY)
+                const [ano, mes, dia] = tx.data.split('-');
+                const dataFormatada = `${dia}/${mes}/${ano}`;
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-700/30 transition border-b border-slate-700/40';
+                tr.innerHTML = `
+                    <td class="py-3 px-4 text-xs text-slate-300 font-medium whitespace-nowrap">${dataFormatada}</td>
+                    <td class="py-3 px-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${tx.tipo === 'Entrada' ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-800/60' : 'bg-rose-950/60 text-rose-300 border border-rose-800/60'}">
+                            <i class="fa-solid ${tx.tipo === 'Entrada' ? 'fa-arrow-up text-emerald-400' : 'fa-arrow-down text-rose-400'} mr-1 text-[10px]"></i> ${tx.tipo}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4">
+                        <div class="text-sm font-medium text-white">${escapeHTML(tx.descricao)}</div>
+                        <div class="text-xs text-slate-400">${escapeHTML(tx.categoria)}</div>
+                    </td>
+                    <td class="py-3 px-4 text-xs text-slate-300 whitespace-nowrap">${escapeHTML(tx.forma)}</td>
+                    <td class="py-3 px-4 text-right font-semibold whitespace-nowrap ${tx.tipo === 'Entrada' ? 'text-emerald-400' : 'text-rose-400'}">
+                        ${tx.tipo === 'Entrada' ? '+' : '-'} R$ ${tx.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </td>
+                    <td class="py-3 px-4 text-center whitespace-nowrap">
+                        <button onclick="deleteTransaction('${tx.id}')" title="Excluir" class="text-slate-500 hover:text-rose-400 p-1.5 rounded-lg transition">
+                            <i class="fa-solid fa-trash-can text-xs"></i>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            // Cálculos finais do Dashboard
+            const lucroReal = totalEntradas - totalSaidas;
+            const valorEmCaixa = SALDO_INICIAL_BASE + lucroReal;
+
+            // Atualizar Cards na Tela
+            document.getElementById('card-caixa').innerText = `R$ ${valorEmCaixa.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('card-faturamento').innerText = `R$ ${totalEntradas.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('card-gastos').innerText = `R$ ${totalSaidas.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            
+            const cardLucro = document.getElementById('card-lucro');
+            cardLucro.innerText = `R$ ${lucroReal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            if (lucroReal < 0) {
+                cardLucro.className = 'text-2xl font-bold text-rose-400 mt-1';
+            } else {
+                cardLucro.className = 'text-2xl font-bold text-indigo-400 mt-1';
+            }
+        }
+
+        // Exportar Dados em Formato JSON (Para salvar no repositório GitHub)
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(transactions, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "dados.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            showToast('Arquivo dados.json gerado para o GitHub!', 'success');
+        }
+
+        // Funções do Modal de Sincronização GitHub
+        function openSyncModal() {
+            document.getElementById('sync-modal').classList.remove('hidden');
+        }
+
+        function closeSyncModal() {
+            document.getElementById('sync-modal').classList.add('hidden');
+        }
+
+        // Importar dados direto de um link Raw do GitHub
+        async function importFromGitHub() {
+            const url = document.getElementById('github-raw-url').value.trim();
+            if (!url) {
+                showToast('Insira uma URL Raw válida do GitHub!', 'error');
+                return;
+            }
+
+            try {
+                showToast('Buscando dados do GitHub...', 'info');
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Não foi possível acessar a URL informada.');
+                
+                const remoteData = await response.json();
+                if (!Array.isArray(remoteData)) throw o new Error('Formato JSON inválido.');
+
+                transactions = remoteData;
+                localStorage.setItem('gestao_financeira_github_url', url);
+                saveAndRender();
+                closeSyncModal();
+                showToast('Dados sincronizados com sucesso do GitHub!', 'success');
+            } catch (error) {
+                console.error(error);
+                showToast('Erro ao sincronizar. Verifique se o link Raw está público.', 'error');
+            }
+        }
+
+        // Sistema de Notificação Toast
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            
+            // Cores baseadas no tipo
+            toast.className = 'fixed bottom-5 right-5 z-50 px-4 py-3 rounded-xl shadow-2xl text-sm font-medium border transition-all duration-300 transform translate-y-0 opacity-100 ';
+            if (type === 'success') {
+                toast.className += 'bg-emerald-950 text-emerald-200 border-emerald-800';
+            } else if (type === 'error') {
+                toast.className += 'bg-rose-950 text-rose-200 border-rose-800';
+            } else {
+                toast.className += 'bg-slate-800 text-slate-200 border-slate-700';
+            }
+
+            setTimeout(() => {
+                toast.className += ' transform translate-y-2 opacity-0';
+                setTimeout(() => toast.classList.add('hidden'), 300);
+            }, 3500);
+        }
+
+        // Segurança básica contra XSS em strings injetadas
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
     </script>
 </body>
 </html>
