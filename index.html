@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão Financeira - Fluxo de Caixa</title>
+    <title>Gestão Financeira - Fluxo de Caixa (CSV)</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Inter Font -->
@@ -33,15 +33,15 @@
                 </div>
                 <div>
                     <h1 class="text-lg font-bold tracking-tight text-white">Gestão Empresarial</h1>
-                    <p class="text-xs text-slate-400">Fluxo de Caixa & Sincronização Automática</p>
+                    <p class="text-xs text-slate-400">Fluxo de Caixa & Sincronização CSV (LibreOffice)</p>
                 </div>
             </div>
             <div class="flex items-center space-x-2">
                 <button onclick="openConfigModal()" class="inline-flex items-center px-3.5 py-2 text-xs font-medium rounded-lg text-indigo-200 bg-indigo-950 hover:bg-indigo-900 border border-indigo-800 transition shadow-sm">
                     <i class="fa-solid fa-gear mr-2"></i> Configurar GitHub
                 </button>
-                <button onclick="syncFromGitHub()" class="inline-flex items-center px-3.5 py-2 text-xs font-medium rounded-lg text-emerald-200 bg-emerald-950 hover:bg-emerald-900 border border-emerald-800 transition shadow-sm">
-                    <i class="fa-solid fa-rotate mr-2"></i> Sincronizar Nuvem
+                <button onclick="exportCSV()" class="inline-flex items-center px-3.5 py-2 text-xs font-medium rounded-lg text-emerald-200 bg-emerald-950 hover:bg-emerald-900 border border-emerald-800 transition shadow-sm">
+                    <i class="fa-solid fa-file-arrow-down mr-2"></i> Baixar CSV
                 </button>
             </div>
         </div>
@@ -237,7 +237,7 @@
         <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
             <div class="flex items-center justify-between pb-3 border-b border-slate-700">
                 <h3 class="text-base font-semibold text-white flex items-center">
-                    <i class="fa-brands fa-github text-indigo-400 mr-2 text-lg"></i> Conexão Automática com o GitHub
+                    <i class="fa-brands fa-github text-indigo-400 mr-2 text-lg"></i> Conexão Automática (dados.csv)
                 </h3>
                 <button onclick="closeConfigModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">
                     <i class="fa-solid fa-xmark text-lg"></i>
@@ -246,7 +246,7 @@
             
             <div class="py-4 space-y-4">
                 <p class="text-xs text-slate-300 leading-relaxed">
-                    Insira abaixo os dados do seu repositório para que o site envie os novos lançamentos automaticamente para o arquivo <code class="bg-slate-900 px-1.5 py-0.5 rounded text-indigo-300 font-mono text-xs">dados.json</code> no GitHub:
+                    Insira abaixo os dados do seu repositório para que o site atualize o arquivo <code class="bg-slate-900 px-1.5 py-0.5 rounded text-indigo-300 font-mono text-xs">dados.csv</code> automaticamente no GitHub:
                 </p>
                 <div>
                     <label class="block text-xs font-medium text-slate-400 mb-1">Seu Nome de Usuário do GitHub</label>
@@ -257,7 +257,7 @@
                     <input type="text" id="gh-repo" placeholder="ex: controle-gastos" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-400 mb-1">Personal Access Token (Classic com permissão repo)</label>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Personal Access Token (Classic com escopo repo)</label>
                     <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
                 </div>
             </div>
@@ -279,13 +279,11 @@
         document.getElementById('data').valueAsDate = new Date();
 
         window.onload = function() {
-            // Carregar configurações salvas no navegador
             document.getElementById('gh-user').value = localStorage.getItem('gh_user') || '';
             document.getElementById('gh-repo').value = localStorage.getItem('gh_repo') || '';
             document.getElementById('gh-token').value = localStorage.getItem('gh_token') || '';
             
             renderApp();
-            // Tenta sincronizar automaticamente ao abrir se houver dados na nuvem
             if(localStorage.getItem('gh_user')) {
                 syncFromGitHub(true);
             }
@@ -317,20 +315,33 @@
             showToast('Configurações salvas com sucesso!', 'success');
         }
 
-        // Função para enviar os dados automaticamente para o GitHub via API
+        // Converter transações para formato CSV string
+        function generateCSV() {
+            let csv = 'id,data,tipo,categoria,descricao,forma,valor\n';
+            transactions.forEach(tx => {
+                // Tratar vírgulas nas descrições para não quebrar colunas do CSV
+                const desc = `"${(tx.descricao || '').replace(/"/g, '""')}"`;
+                const cat = `"${(tx.categoria || '').replace(/"/g, '""')}"`;
+                const forma = `"${(tx.forma || '').replace(/"/g, '""')}"`;
+                csv += `${tx.id},${tx.data},${tx.tipo},${cat},${desc},${forma},${tx.valor}\n`;
+            });
+            return csv;
+        }
+
+        // Função para enviar dados em formato CSV para o GitHub automaticamente
         async function syncToGitHub() {
             const user = localStorage.getItem('gh_user');
             const repo = localStorage.getItem('gh_repo');
             const token = localStorage.getItem('gh_token');
 
-            if (!user || !repo || !token) return; // Se não configurado, apenas ignora e salva localmente
+            if (!user || !repo || !token) return;
 
-            const path = 'dados.json';
+            const path = 'dados.csv';
             const url = `https://api.github.com/repos/${user}/${repo}/contents/${path}`;
-            const contentEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(transactions, null, 2))));
+            const csvContent = generateCSV();
+            const contentEncoded = btoa(unescape(encodeURIComponent(csvContent)));
 
             try {
-                // 1. Precisamos pegar o SHA atual do arquivo no GitHub (exigido pela API para atualizar)
                 let sha = '';
                 const getRes = await fetch(url, {
                     headers: { 'Authorization': `token ${token}` }
@@ -341,9 +352,8 @@
                     sha = fileData.sha;
                 }
 
-                // 2. Envia o novo conteúdo atualizado
                 const bodyData = {
-                    message: "Atualização automática de gastos via app web",
+                    message: "Atualização automática de dados.csv via app web",
                     content: contentEncoded,
                     sha: sha ? sha : undefined
                 };
@@ -357,14 +367,42 @@
                     body: JSON.stringify(bodyData)
                 });
 
-                if (!putRes.ok) throw new Error('Falha ao atualizar arquivo no GitHub.');
-                console.log('Sincronizado automaticamente com o GitHub!');
+                if (!putRes.ok) throw new Error('Falha ao atualizar dados.csv no GitHub.');
+                console.log('Sincronizado automaticamente (CSV) com o GitHub!');
             } catch (error) {
                 console.error('Erro na sincronização automática:', error);
             }
         }
 
-        // Função para baixar os dados mais recentes do GitHub
+        // Função para analisar CSV bruto baixado do GitHub
+        function parseCSV(text) {
+            const lines = text.split('\n');
+            const result = [];
+            if(lines.length <= 1) return result;
+
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if(!line) continue;
+                
+                // Regex simples para ler linhas de CSV considerando campos entre aspas
+                const row = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || line.split(',');
+                if(row.length >= 7) {
+                    const clean = row.map(val => val.replace(/^"|"$/g, '').replace(/""/g, '"'));
+                    result.push({
+                        id: clean[0],
+                        data: clean[1],
+                        tipo: clean[2],
+                        categoria: clean[3],
+                        descricao: clean[4],
+                        forma: clean[5],
+                        valor: parseFloat(clean[6])
+                    });
+                }
+            }
+            return result;
+        }
+
+        // Função para baixar os dados mais recentes do GitHub em formato CSV
         async function syncFromGitHub(silent = false) {
             const user = localStorage.getItem('gh_user');
             const repo = localStorage.getItem('gh_repo');
@@ -374,21 +412,23 @@
                 return;
             }
 
-            const url = `https://raw.githubusercontent.com/${user}/${repo}/main/dados.json`;
+            const url = `https://raw.githubusercontent.com/${user}/${repo}/main/dados.csv`;
 
             try {
-                if(!silent) showToast('Buscando dados do GitHub...', 'info');
+                if(!silent) showToast('Buscando dados.csv do GitHub...', 'info');
                 const response = await fetch(url);
-                if (!response.ok) throw new Error('Arquivo dados.json não encontrado no repositório.');
+                if (!response.ok) throw new Error('Arquivo dados.csv não encontrado no repositório.');
                 
-                const remoteData = await response.json();
+                const csvText = await response.text();
+                const remoteData = parseCSV(csvText);
+                
                 if (Array.isArray(remoteData)) {
                     transactions = remoteData;
-                    saveAndRender(false); // Salva localmente sem disparar novo upload em loop
-                    if(!silent) showToast('Dados sincronizados da nuvem com sucesso!', 'success');
+                    saveAndRender(false);
+                    if(!silent) showToast('Dados CSV sincronizados com sucesso!', 'success');
                 }
             } catch (error) {
-                if(!silent) showToast('Nenhum dado encontrado na nuvem ainda.', 'info');
+                if(!silent) showToast('Nenhum dado CSV encontrado na nuvem ainda.', 'info');
             }
         }
 
@@ -425,7 +465,7 @@
             document.getElementById('descricao').value = '';
             document.getElementById('data').valueAsDate = new Date();
 
-            showToast('Movimentação registrada e salva na nuvem!', 'success');
+            showToast('Movimentação registrada e salva no CSV!', 'success');
         }
 
         // Excluir Transação Individual
@@ -444,13 +484,28 @@
             }
         }
 
-        // Salvar no LocalStorage, atualizar tela e disparar sincronização com GitHub
+        // Salvar localmente e enviar CSV para o GitHub
         function saveAndRender(syncCloud = true) {
             localStorage.setItem('gestao_financeira_transacoes', JSON.stringify(transactions));
             renderApp();
             if (syncCloud) {
                 syncToGitHub();
             }
+        }
+
+        // Botão de download manual do CSV
+        function exportCSV() {
+            const csv = generateCSV();
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", "dados.csv");
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast('Arquivo dados.csv baixado!', 'success');
         }
 
         // Renderização Completa dos Indicadores e Tabela
@@ -473,13 +528,13 @@
 
             transactions.forEach(tx => {
                 if (tx.tipo === 'Entrada') {
-                    totalEntradas += tx.valor;
+                    totalEntradas += Number(tx.valor);
                 } else {
-                    totalSaidas += tx.valor;
+                    totalSaidas += Number(tx.valor);
                 }
 
-                const [ano, mes, dia] = tx.data.split('-');
-                const dataFormatada = `${dia}/${mes}/${ano}`;
+                const [ano, mes, dia] = (tx.data || '').split('-');
+                const dataFormatada = (dia && mes && ano) ? `${dia}/${mes}/${ano}` : tx.data;
 
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-slate-700/30 transition border-b border-slate-700/40';
@@ -496,7 +551,7 @@
                     </td>
                     <td class="py-3 px-4 text-xs text-slate-300 whitespace-nowrap">${escapeHTML(tx.forma)}</td>
                     <td class="py-3 px-4 text-right font-semibold whitespace-nowrap ${tx.tipo === 'Entrada' ? 'text-emerald-400' : 'text-rose-400'}">
-                        ${tx.tipo === 'Entrada' ? '+' : '-'} R$ ${tx.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        ${tx.tipo === 'Entrada' ? '+' : '-'} R$ ${Number(tx.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                     <td class="py-3 px-4 text-center whitespace-nowrap">
                         <button onclick="deleteTransaction('${tx.id}')" title="Excluir" class="text-slate-500 hover:text-rose-400 p-1.5 rounded-lg transition">
@@ -545,7 +600,7 @@
 
         // Segurança básica contra XSS
         function escapeHTML(str) {
-            return str.replace(/[&<>'"]/g, 
+            return String(str || '').replace(/[&<>'"]/g, 
                 tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
             );
         }
