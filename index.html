@@ -280,7 +280,6 @@
 
         // Inicializar aplicação ao carregar a janela
         window.onload = function() {
-            // Verificar se há URL salva no localStorage para sincronização automática opcional
             const savedUrl = localStorage.getItem('gestao_financeira_github_url');
             if (savedUrl) {
                 document.getElementById('github-raw-url').value = savedUrl;
@@ -314,10 +313,9 @@
                 forma
             };
 
-            transactions.unshift(newTx); // Adiciona no topo
+            transactions.unshift(newTx);
             saveAndRender();
             
-            // Resetar campos parciais
             document.getElementById('valor').value = '';
             document.getElementById('descricao').value = '';
             document.getElementById('data').valueAsDate = new Date();
@@ -372,7 +370,6 @@
                     totalSaidas += tx.valor;
                 }
 
-                // Formatar Data (YYYY-MM-DD para DD/MM/YYYY)
                 const [ano, mes, dia] = tx.data.split('-');
                 const dataFormatada = `${dia}/${mes}/${ano}`;
 
@@ -402,11 +399,9 @@
                 tableBody.appendChild(tr);
             });
 
-            // Cálculos finais do Dashboard
             const lucroReal = totalEntradas - totalSaidas;
             const valorEmCaixa = SALDO_INICIAL_BASE + lucroReal;
 
-            // Atualizar Cards na Tela
             document.getElementById('card-caixa').innerText = `R$ ${valorEmCaixa.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             document.getElementById('card-faturamento').innerText = `R$ ${totalEntradas.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             document.getElementById('card-gastos').innerText = `R$ ${totalSaidas.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -420,7 +415,7 @@
             }
         }
 
-        // Exportar Dados em Formato JSON (Para salvar no repositório GitHub)
+        // Exportar Dados em Formato JSON
         function exportData() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(transactions, null, 2));
             const downloadAnchor = document.createElement('a');
@@ -455,7 +450,7 @@
                 if (!response.ok) throw new Error('Não foi possível acessar a URL informada.');
                 
                 const remoteData = await response.json();
-                if (!Array.isArray(remoteData)) throw o new Error('Formato JSON inválido.');
+                if (!Array.isArray(remoteData)) throw new Error('Formato JSON inválido.');
 
                 transactions = remoteData;
                 localStorage.setItem('gestao_financeira_github_url', url);
@@ -473,7 +468,6 @@
             const toast = document.getElementById('toast');
             toast.innerText = message;
             
-            // Cores baseadas no tipo
             toast.className = 'fixed bottom-5 right-5 z-50 px-4 py-3 rounded-xl shadow-2xl text-sm font-medium border transition-all duration-300 transform translate-y-0 opacity-100 ';
             if (type === 'success') {
                 toast.className += 'bg-emerald-950 text-emerald-200 border-emerald-800';
@@ -489,7 +483,7 @@
             }, 3500);
         }
 
-        // Segurança básica contra XSS em strings injetadas
+        // Segurança básica contra XSS
         function escapeHTML(str) {
             return str.replace(/[&<>'"]/g, 
                 tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
